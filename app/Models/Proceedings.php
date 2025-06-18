@@ -19,6 +19,7 @@ class Proceedings extends Model
         'front_matter_file',
         'back_matter_file',
         'cover_image',
+        'generated_pdf_file',
         'status'
     ];
 

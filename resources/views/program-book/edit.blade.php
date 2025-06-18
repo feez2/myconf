@@ -24,14 +24,33 @@
                                 @enderror
                             </div>
 
-                            <div class="mb-3">
-                                <label for="date" class="form-label">Date</label>
-                                <input type="date" name="date" id="date"
-                                    class="form-control @error('date') is-invalid @enderror"
-                                    value="{{ old('date', $programBook->date->format('Y-m-d')) }}" required>
-                                @error('date')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="start_date" class="form-label">Start Date</label>
+                                        <input type="date" name="start_date" id="start_date"
+                                            class="form-control @error('start_date') is-invalid @enderror"
+                                            value="{{ old('start_date', $programBook->start_date->format('Y-m-d')) }}"
+                                            min="{{ $programBook->conference->start_date->format('Y-m-d') }}"
+                                            max="{{ $programBook->conference->end_date->format('Y-m-d') }}" required>
+                                        @error('start_date')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="end_date" class="form-label">End Date</label>
+                                        <input type="date" name="end_date" id="end_date"
+                                            class="form-control @error('end_date') is-invalid @enderror"
+                                            value="{{ old('end_date', $programBook->end_date->format('Y-m-d')) }}"
+                                            min="{{ $programBook->conference->start_date->format('Y-m-d') }}"
+                                            max="{{ $programBook->conference->end_date->format('Y-m-d') }}" required>
+                                        @error('end_date')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="mb-3">
@@ -77,4 +96,25 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const startDateInput = document.getElementById('start_date');
+            const endDateInput = document.getElementById('end_date');
+
+            startDateInput.addEventListener('change', function() {
+                endDateInput.min = this.value;
+                if (endDateInput.value && endDateInput.value < this.value) {
+                    endDateInput.value = this.value;
+                }
+            });
+
+            endDateInput.addEventListener('change', function() {
+                startDateInput.max = this.value;
+                if (startDateInput.value && startDateInput.value > this.value) {
+                    startDateInput.value = this.value;
+                }
+            });
+        });
+    </script>
 </x-app-layout>

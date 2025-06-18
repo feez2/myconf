@@ -16,7 +16,7 @@
                             <div class="mb-4">
                                 <h5>Program Book Details</h5>
                                 <p><strong>Title:</strong> {{ $programBook->title }}</p>
-                                <p><strong>Date:</strong> {{ $programBook->date->format('F j, Y') }}</p>
+                                <p><strong>Date Range:</strong> {{ $programBook->start_date->format('F j, Y') }} - {{ $programBook->end_date->format('F j, Y') }}</p>
                                 <p><strong>Sessions:</strong> {{ $programBook->sessions->count() }}</p>
                                 <p><strong>Presentations:</strong> {{ $programBook->sessions->sum(function($session) { return $session->presentations->count(); }) }}</p>
 

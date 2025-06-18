@@ -12,14 +12,16 @@ class ProgramBook extends Model
     protected $fillable = [
         'conference_id',
         'title',
-        'date',
+        'start_date',
+        'end_date',
         'welcome_message',
         'general_information',
         'cover_image_path'
     ];
 
     protected $casts = [
-        'date' => 'date',
+        'start_date' => 'date',
+        'end_date' => 'date',
     ];
 
     public function conference()
@@ -35,10 +37,9 @@ class ProgramBook extends Model
     public function getScheduleByDayAttribute()
     {
         return $this->sessions()
+            ->orderBy('date')
             ->orderBy('start_time')
             ->get()
-            ->groupBy(function ($session) {
-                return $session->start_time->format('Y-m-d');
-            });
+            ->groupBy('date');
     }
 }

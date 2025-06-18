@@ -24,8 +24,8 @@ class Presentation extends Model
     ];
 
     protected $casts = [
-        'start_time' => 'datetime',
-        'end_time' => 'datetime',
+        'start_time' => 'datetime:H:i',
+        'end_time' => 'datetime:H:i',
     ];
 
     public function session()
@@ -36,5 +36,17 @@ class Presentation extends Model
     public function paper()
     {
         return $this->belongsTo(Paper::class);
+    }
+
+    // Helper method to get full datetime for start_time
+    public function getStartDateTimeAttribute()
+    {
+        return $this->session->date->setTimeFrom($this->start_time);
+    }
+
+    // Helper method to get full datetime for end_time
+    public function getEndDateTimeAttribute()
+    {
+        return $this->session->date->setTimeFrom($this->end_time);
     }
 }

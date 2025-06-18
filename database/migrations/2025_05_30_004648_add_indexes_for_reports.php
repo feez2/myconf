@@ -9,7 +9,6 @@ return new class extends Migration
     public function up()
     {
         Schema::table('papers', function (Blueprint $table) {
-            $table->index(['conference_id', 'status']);
             $table->index(['conference_id', 'approved_for_proceedings']);
         });
 
@@ -21,7 +20,6 @@ return new class extends Migration
     public function down()
     {
         Schema::table('papers', function (Blueprint $table) {
-            $table->dropIndex(['conference_id', 'status']);
             $table->dropIndex(['conference_id', 'approved_for_proceedings']);
         });
 

@@ -13,6 +13,7 @@ class Session extends Model
         'program_book_id',
         'title',
         'description',
+        'date',
         'start_time',
         'end_time',
         'location',
@@ -22,8 +23,9 @@ class Session extends Model
     ];
 
     protected $casts = [
-        'start_time' => 'datetime',
-        'end_time' => 'datetime',
+        'date' => 'date',
+        'start_time' => 'datetime:H:i',
+        'end_time' => 'datetime:H:i',
     ];
 
     public function programBook()
@@ -34,5 +36,17 @@ class Session extends Model
     public function presentations()
     {
         return $this->hasMany(Presentation::class)->orderBy('order');
+    }
+
+    // Helper method to get full datetime for start_time
+    public function getStartDateTimeAttribute()
+    {
+        return $this->date->setTimeFrom($this->start_time);
+    }
+
+    // Helper method to get full datetime for end_time
+    public function getEndDateTimeAttribute()
+    {
+        return $this->date->setTimeFrom($this->end_time);
     }
 }

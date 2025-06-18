@@ -4,7 +4,7 @@
             <h2>Your Notifications</h2>
             <form action="{{ route('notifications.mark-all-read') }}" method="POST">
                 @csrf
-                <button type="submit" class="btn btn-outline-primary">
+                <button type="submit" class="btn btn-primary">
                     Mark All as Read
                 </button>
             </form>
@@ -34,7 +34,7 @@
                         @endforeach
                     </div>
                     <div class="d-flex justify-content-center mt-3">
-                        {{ $notifications->links() }}
+                        {{ $notifications->links('pagination::bootstrap-5') }}
                     </div>
                 @endif
             </div>

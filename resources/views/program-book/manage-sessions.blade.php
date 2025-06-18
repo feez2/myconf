@@ -10,6 +10,16 @@
                         </a>
                     </div>
                     <div class="card-body">
+                        @if($errors->any())
+                            <div class="alert alert-danger">
+                                <ul class="mb-0">
+                                    @foreach($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+                        
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="card mb-4">
@@ -40,15 +50,22 @@
                                                 <textarea name="description" id="description" rows="3" class="form-control"></textarea>
                                             </div>
 
+                                            <div class="mb-3">
+                                                <label for="date" class="form-label">Date</label>
+                                                <input type="date" name="date" id="date" class="form-control" 
+                                                    min="{{ $programBook->start_date->format('Y-m-d') }}"
+                                                    max="{{ $programBook->end_date->format('Y-m-d') }}" required>
+                                            </div>
+
                                             <div class="row">
                                                 <div class="col-md-6 mb-3">
                                                     <label for="start_time" class="form-label">Start Time</label>
-                                                    <input type="datetime-local" name="start_time" id="start_time" class="form-control" required>
+                                                    <input type="time" name="start_time" id="start_time" class="form-control" required>
                                                 </div>
 
                                                 <div class="col-md-6 mb-3">
                                                     <label for="end_time" class="form-label">End Time</label>
-                                                    <input type="datetime-local" name="end_time" id="end_time" class="form-control" required>
+                                                    <input type="time" name="end_time" id="end_time" class="form-control" required>
                                                 </div>
                                             </div>
 
@@ -101,8 +118,8 @@
                                                                     <small class="text-muted">{{ ucfirst($session->type) }}</small>
                                                                 </td>
                                                                 <td>
-                                                                    {{ $session->start_time->format('M j, h:i A') }}<br>
-                                                                    to {{ $session->end_time->format('h:i A') }}
+                                                                    {{ $session->date->format('M j, Y') }}<br>
+                                                                    {{ $session->start_time->format('h:i A') }} - {{ $session->end_time->format('h:i A') }}
                                                                 </td>
                                                                 <td>{{ $session->location }}</td>
                                                                 <td>{{ $session->presentations->count() }}</td>
@@ -245,17 +262,23 @@
                                     rows="3" class="form-control">{{ $session->description }}</textarea>
                             </div>
 
+                            <div class="mb-3">
+                                <label for="edit_date{{ $session->id }}" class="form-label">Date</label>
+                                <input type="date" name="date" id="edit_date{{ $session->id }}"
+                                    class="form-control" value="{{ $session->date->format('Y-m-d') }}" required>
+                            </div>
+
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="edit_start_time{{ $session->id }}" class="form-label">Start Time</label>
-                                    <input type="datetime-local" name="start_time" id="edit_start_time{{ $session->id }}"
-                                        class="form-control" value="{{ $session->start_time->format('Y-m-d\TH:i') }}" required>
+                                    <input type="time" name="start_time" id="edit_start_time{{ $session->id }}"
+                                        class="form-control" value="{{ $session->start_time->format('H:i') }}" required>
                                 </div>
 
                                 <div class="col-md-6 mb-3">
                                     <label for="edit_end_time{{ $session->id }}" class="form-label">End Time</label>
-                                    <input type="datetime-local" name="end_time" id="edit_end_time{{ $session->id }}"
-                                        class="form-control" value="{{ $session->end_time->format('Y-m-d\TH:i') }}" required>
+                                    <input type="time" name="end_time" id="edit_end_time{{ $session->id }}"
+                                        class="form-control" value="{{ $session->end_time->format('H:i') }}" required>
                                 </div>
                             </div>
 
@@ -317,13 +340,13 @@
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="presentation_start_time{{ $session->id }}" class="form-label">Start Time</label>
-                                    <input type="datetime-local" name="start_time" id="presentation_start_time{{ $session->id }}"
+                                    <input type="time" name="start_time" id="presentation_start_time{{ $session->id }}"
                                         class="form-control" required>
                                 </div>
 
                                 <div class="col-md-6 mb-3">
                                     <label for="presentation_end_time{{ $session->id }}" class="form-label">End Time</label>
-                                    <input type="datetime-local" name="end_time" id="presentation_end_time{{ $session->id }}"
+                                    <input type="time" name="end_time" id="presentation_end_time{{ $session->id }}"
                                         class="form-control" required>
                                 </div>
                             </div>
@@ -402,14 +425,14 @@
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label for="edit_presentation_start_time{{ $presentation->id }}" class="form-label">Start Time</label>
-                                        <input type="datetime-local" name="start_time" id="edit_presentation_start_time{{ $presentation->id }}"
-                                            class="form-control" value="{{ $presentation->start_time->format('Y-m-d\TH:i') }}" required>
+                                        <input type="time" name="start_time" id="edit_presentation_start_time{{ $presentation->id }}"
+                                            class="form-control" value="{{ $presentation->start_time->format('H:i') }}" required>
                                     </div>
 
                                     <div class="col-md-6 mb-3">
                                         <label for="edit_presentation_end_time{{ $presentation->id }}" class="form-label">End Time</label>
-                                        <input type="datetime-local" name="end_time" id="edit_presentation_end_time{{ $presentation->id }}"
-                                            class="form-control" value="{{ $presentation->end_time->format('Y-m-d\TH:i') }}" required>
+                                        <input type="time" name="end_time" id="edit_presentation_end_time{{ $presentation->id }}"
+                                            class="form-control" value="{{ $presentation->end_time->format('H:i') }}" required>
                                     </div>
                                 </div>
 
@@ -453,3 +476,69 @@
         @endforeach
     @endforeach
 </x-app-layout>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Session time validation
+        function setupSessionTimeValidation() {
+            const sessionStartInputs = document.querySelectorAll('input[name="start_time"]');
+            const sessionEndInputs = document.querySelectorAll('input[name="end_time"]');
+
+            sessionStartInputs.forEach((startInput, index) => {
+                const endInput = sessionEndInputs[index];
+                
+                startInput.addEventListener('change', function() {
+                    endInput.min = this.value;
+                    if (endInput.value && endInput.value <= this.value) {
+                        endInput.value = '';
+                    }
+                });
+
+                endInput.addEventListener('change', function() {
+                    startInput.max = this.value;
+                    if (startInput.value && startInput.value >= this.value) {
+                        startInput.value = '';
+                    }
+                });
+            });
+        }
+
+        // Presentation time validation
+        function setupPresentationTimeValidation() {
+            const presentationStartInputs = document.querySelectorAll('input[name="start_time"]');
+            const presentationEndInputs = document.querySelectorAll('input[name="end_time"]');
+
+            presentationStartInputs.forEach((startInput, index) => {
+                const endInput = presentationEndInputs[index];
+                
+                startInput.addEventListener('change', function() {
+                    endInput.min = this.value;
+                    if (endInput.value && endInput.value <= this.value) {
+                        endInput.value = '';
+                    }
+                });
+
+                endInput.addEventListener('change', function() {
+                    startInput.max = this.value;
+                    if (startInput.value && startInput.value >= this.value) {
+                        startInput.value = '';
+                    }
+                });
+            });
+        }
+
+        // Initialize validation
+        setupSessionTimeValidation();
+        setupPresentationTimeValidation();
+
+        // Re-initialize validation when modals are shown
+        document.querySelectorAll('[data-bs-toggle="modal"]').forEach(button => {
+            button.addEventListener('click', function() {
+                setTimeout(() => {
+                    setupSessionTimeValidation();
+                    setupPresentationTimeValidation();
+                }, 100);
+            });
+        });
+    });
+</script>

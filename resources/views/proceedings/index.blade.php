@@ -2,11 +2,18 @@
     <div class="container py-5">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2>Proceedings - {{ $conference->title }}</h2>
-            @can('manageProceedings', $conference)
-                <a href="{{ route('proceedings.create', $conference) }}" class="btn btn-primary">
-                    Create New Proceedings
-                </a>
-            @endcan
+            <div class="d-flex gap-2">
+                @if($proceedings && $proceedings->generated_pdf_file)
+                    <a href="{{ route('proceedings.download', $conference) }}" class="btn btn-success">
+                        <i class="bi bi-download"></i> Download PDF
+                    </a>
+                @endif
+                @can('manageProceedings', $conference)
+                    <a href="{{ route('proceedings.create', $conference) }}" class="btn btn-primary">
+                        Create New Proceedings
+                    </a>
+                @endcan
+            </div>
         </div>
 
         <div class="card mb-4">
@@ -49,6 +56,16 @@
                                             <a href="{{ route('proceedings.edit', $proceedings) }}" class="btn btn-sm btn-primary">
                                                 <i class="bi bi-pencil"></i> Edit
                                             </a>
+                                            @if($proceedings->generated_pdf_file)
+                                                <form action="{{ route('proceedings.regenerate', $proceedings) }}" 
+                                                      method="POST" class="d-inline">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-sm btn-warning"
+                                                            onclick="return confirm('Regenerate proceedings PDF?')">
+                                                        <i class="bi bi-arrow-clockwise"></i> Regenerate
+                                                    </button>
+                                                </form>
+                                            @endif
                                         @endcan
                                     </td>
                                 </tr>

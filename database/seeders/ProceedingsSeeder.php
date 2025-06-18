@@ -34,7 +34,7 @@ class ProceedingsSeeder extends Seeder
             // Assign accepted papers to proceedings
             foreach ($acceptedPapers as $paper) {
                 $paper->update([
-                    'proceeding_id' => $proceedings->id,
+                    'proceedings_id' => $proceedings->id,
                     'camera_ready_deadline' => $conference->end_date->subDays(30)
                 ]);
             }

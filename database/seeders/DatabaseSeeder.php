@@ -20,7 +20,8 @@ class DatabaseSeeder extends Seeder
             ProgramCommitteeSeeder::class,
             ReviewSeeder::class,
             DecisionSeeder::class,
-            ProceedingsSeeder::class
+            ProceedingsSeeder::class,
+            ProgramBookSeeder::class
         ]);
     }
 }

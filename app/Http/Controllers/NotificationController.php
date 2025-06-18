@@ -40,7 +40,7 @@ class NotificationController extends Controller
 
     public function redirect(DatabaseNotification $notification)
     {
-        $this->authorize('update', $notification);
+        // $this->authorize('update', $notification);
 
         $notification->markAsRead();
 

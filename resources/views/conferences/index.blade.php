@@ -98,7 +98,7 @@
                     </table>
                 </div>
                 <div class="d-flex justify-content-center">
-                    {{ $conferences->links() }}
+                    {{ $conferences->links('pagination::bootstrap-5') }}
                 </div>
             </div>
         </div>

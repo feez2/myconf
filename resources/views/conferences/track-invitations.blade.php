@@ -86,7 +86,7 @@
 
                 <!-- Pagination -->
                 <div class="d-flex justify-content-center mt-4">
-                    {{ $invitations->links() }}
+                    {{ $invitations->links('pagination::bootstrap-5') }}
                 </div>
             </div>
         </div>

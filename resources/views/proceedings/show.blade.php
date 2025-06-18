@@ -120,15 +120,30 @@
                                 <i class="bi bi-pencil-square me-1"></i> Edit Proceedings
                             </a>
 
-                            <button class="btn btn-success w-100 mb-2 rounded-pill shadow-sm"
-                                    onclick="confirm('Generate full proceedings?') && document.getElementById('generate-form').submit()">
-                                <i class="bi bi-gear-fill me-1"></i> Generate Proceedings
-                            </button>
+                            @if($proceedings->generated_pdf_file)
+                                <a href="{{ route('proceedings.download', $proceedings->conference) }}"
+                                class="btn btn-success w-100 mb-2 rounded-pill shadow-sm">
+                                    <i class="bi bi-download me-1"></i> Download PDF
+                                </a>
+                                <button class="btn btn-warning w-100 mb-2 rounded-pill shadow-sm"
+                                        onclick="confirm('Regenerate proceedings PDF? This will update the PDF with any changes.') && document.getElementById('regenerate-form').submit()">
+                                    <i class="bi bi-arrow-clockwise me-1"></i> Regenerate PDF
+                                </button>
+                                <form id="regenerate-form" action="{{ route('proceedings.regenerate', $proceedings) }}"
+                                    method="POST" class="d-none">
+                                    @csrf
+                                </form>
+                            @else
+                                <button class="btn btn-success w-100 mb-2 rounded-pill shadow-sm"
+                                        onclick="confirm('Generate full proceedings?') && document.getElementById('generate-form').submit()">
+                                    <i class="bi bi-gear-fill me-1"></i> Generate Proceedings
+                                </button>
 
-                            <form id="generate-form" action="{{ route('proceedings.generate', $proceedings->conference) }}"
-                                method="POST" class="d-none">
-                                @csrf
-                            </form>
+                                <form id="generate-form" action="{{ route('proceedings.generate', $proceedings) }}"
+                                    method="POST" class="d-none">
+                                    @csrf
+                                </form>
+                            @endif
                         @endcan
 
                         <a href="{{ route('proceedings.index', $proceedings->conference) }}"
