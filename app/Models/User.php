@@ -36,6 +36,11 @@ class User extends Authenticatable
         return $this->hasMany(Paper::class);
     }
 
+    public function paperAuthors()
+    {
+        return $this->hasMany(PaperAuthor::class);
+    }
+
     public function reviews()
     {
         return $this->hasMany(Review::class, 'reviewer_id');

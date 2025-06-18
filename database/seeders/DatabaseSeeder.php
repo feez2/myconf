@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             ConferenceSeeder::class,
             PaperSeeder::class,
+            PaperAuthorSeeder::class,
             ProgramCommitteeSeeder::class,
             ReviewSeeder::class,
             DecisionSeeder::class,
