@@ -129,7 +129,7 @@
                                         onclick="confirm('Regenerate proceedings PDF? This will update the PDF with any changes.') && document.getElementById('regenerate-form').submit()">
                                     <i class="bi bi-arrow-clockwise me-1"></i> Regenerate PDF
                                 </button>
-                                <form id="regenerate-form" action="{{ route('proceedings.regenerate', $proceedings) }}"
+                                <form id="regenerate-form" action="{{ route('proceedings.generate', $proceedings->conference) }}"
                                     method="POST" class="d-none">
                                     @csrf
                                 </form>
@@ -139,7 +139,7 @@
                                     <i class="bi bi-gear-fill me-1"></i> Generate Proceedings
                                 </button>
 
-                                <form id="generate-form" action="{{ route('proceedings.generate', $proceedings) }}"
+                                <form id="generate-form" action="{{ route('proceedings.generate', $proceedings->conference) }}"
                                     method="POST" class="d-none">
                                     @csrf
                                 </form>

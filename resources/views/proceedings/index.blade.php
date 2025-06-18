@@ -57,7 +57,7 @@
                                                 <i class="bi bi-pencil"></i> Edit
                                             </a>
                                             @if($proceedings->generated_pdf_file)
-                                                <form action="{{ route('proceedings.regenerate', $proceedings) }}" 
+                                                <form action="{{ route('proceedings.generate', $conference) }}" 
                                                       method="POST" class="d-inline">
                                                     @csrf
                                                     <button type="submit" class="btn btn-sm btn-warning"

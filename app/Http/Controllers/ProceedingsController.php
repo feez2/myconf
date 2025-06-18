@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ProceedingsController extends Controller
 {
@@ -230,36 +231,137 @@ class ProceedingsController extends Controller
      */
     public function generateProceedings(Conference $conference)
     {
-        // Check if proceedings already exist
-        if ($conference->proceedings()->exists()) {
-            return redirect()->route('proceedings.index', $conference)
-                ->with('error', 'Proceedings already exist for this conference.');
+        $this->authorize('manageProceedings', $conference);
+
+        // Get or create proceedings
+        $proceedings = $conference->proceedings()->first();
+        
+        if (!$proceedings) {
+            // Create new proceedings if they don't exist
+            $proceedings = $conference->proceedings()->create([
+                'title' => "{$conference->title} Proceedings",
+                'status' => Proceedings::STATUS_DRAFT,
+                'publication_date' => now(),
+            ]);
+
+            // Get all accepted papers and associate them
+            $acceptedPapers = $conference->papers()
+                ->where('status', 'accepted')
+                ->orderBy('title')
+                ->get();
+
+            foreach ($acceptedPapers as $paper) {
+                $paper->update(['proceedings_id' => $proceedings->id]);
+            }
         }
 
-        // Get all accepted papers
-        $acceptedPapers = $conference->papers()
+        // Get papers for the proceedings
+        $papers = $proceedings->papers()
             ->where('status', 'accepted')
+            ->with(['author', 'authors'])
             ->orderBy('title')
             ->get();
 
-        if ($acceptedPapers->isEmpty()) {
+        if ($papers->isEmpty()) {
+            return redirect()->route('proceedings.show', $proceedings)
+                ->with('error', 'No accepted papers found for these proceedings.');
+        }
+
+        try {
+            // Generate PDF using the template
+            $pdf = Pdf::loadView('proceedings.pdf', [
+                'proceedings' => $proceedings,
+                'papers' => $papers
+            ]);
+
+            // Set PDF options
+            $pdf->setPaper('A4', 'portrait');
+            $pdf->setOptions([
+                'isHtml5ParserEnabled' => true,
+                'isRemoteEnabled' => true,
+                'isCssFloatEnabled' => true,
+                'defaultFont' => 'serif',
+                'dpi' => 150,
+                'fontHeightRatio' => 0.9,
+            ]);
+
+            // Generate unique filename
+            $filename = 'proceedings_' . $conference->id . '_' . time() . '.pdf';
+            $filepath = 'proceedings/generated/' . $filename;
+
+            // Ensure the directory exists
+            Storage::disk('public')->makeDirectory('proceedings/generated');
+
+            // Save PDF to storage
+            Storage::disk('public')->put($filepath, $pdf->output());
+
+            // Update proceedings with generated PDF file path
+            $proceedings->update([
+                'generated_pdf_file' => $filepath,
+                'status' => Proceedings::STATUS_PUBLISHED
+            ]);
+
+            Log::info('Proceedings PDF generated successfully', [
+                'conference_id' => $conference->id,
+                'proceedings_id' => $proceedings->id,
+                'filepath' => $filepath,
+                'papers_count' => $papers->count()
+            ]);
+
+            return redirect()->route('proceedings.show', $proceedings)
+                ->with('success', 'Proceedings PDF generated successfully!');
+
+        } catch (\Exception $e) {
+            Log::error('Error generating proceedings PDF', [
+                'conference_id' => $conference->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->route('proceedings.show', $proceedings)
+                ->with('error', 'Error generating PDF: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Download proceedings PDF for a conference
+     */
+    public function downloadProceedings(Conference $conference)
+    {
+        $this->authorize('manageProceedings', $conference);
+
+        $proceedings = $conference->proceedings()->first();
+        
+        if (!$proceedings || !$proceedings->generated_pdf_file) {
             return redirect()->route('proceedings.index', $conference)
-                ->with('error', 'No accepted papers found for this conference.');
+                ->with('error', 'No generated PDF found for these proceedings.');
         }
 
-        // Create new proceedings
-        $proceedings = $conference->proceedings()->create([
-            'title' => "{$conference->title} Proceedings",
-            'status' => Proceedings::STATUS_DRAFT,
-            'publication_date' => now(),
-        ]);
-
-        // Associate accepted papers with the proceedings
-        foreach ($acceptedPapers as $paper) {
-            $paper->update(['proceedings_id' => $proceedings->id]);
+        if (!Storage::disk('public')->exists($proceedings->generated_pdf_file)) {
+            return redirect()->route('proceedings.index', $conference)
+                ->with('error', 'Generated PDF file not found.');
         }
 
-        return redirect()->route('proceedings.edit', $proceedings)
-            ->with('success', 'Proceedings generated successfully. Please complete the proceedings details.');
+        return Storage::disk('public')->download($proceedings->generated_pdf_file);
+    }
+
+    /**
+     * Remove a paper from proceedings
+     */
+    public function removePaper(Conference $conference, Paper $paper)
+    {
+        $this->authorize('manageProceedings', $conference);
+
+        // Check if the paper belongs to this conference
+        if ($paper->conference_id !== $conference->id) {
+            return redirect()->route('proceedings.index', $conference)
+                ->with('error', 'Paper does not belong to this conference.');
+        }
+
+        // Remove the paper from proceedings
+        $paper->update(['proceedings_id' => null]);
+
+        return redirect()->route('proceedings.index', $conference)
+            ->with('success', 'Paper removed from proceedings successfully.');
     }
 }
