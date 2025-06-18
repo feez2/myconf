@@ -108,7 +108,7 @@
                         </table>
                     </div>
                     <div class="d-flex justify-content-center mt-3">
-                        {{ $papers->links() }}
+                        {{ $papers->links('pagination::bootstrap-5') }}
                     </div>
                 {{-- @endif --}}
             </div>
