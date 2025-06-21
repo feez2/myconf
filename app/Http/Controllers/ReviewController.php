@@ -53,10 +53,10 @@ class ReviewController extends Controller
         // Search by title
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where('title', 'like', "%{$search}%");
+            $query->where('title', 'ilike', "%{$search}%");
         }
 
-        $papers = $query->orderBy('created_at', 'desc')->paginate(10);
+        $papers = $query->orderBy('created_at', 'desc')->paginate(10)->appends($request->all());
 
         return view('reviews.index', compact('papers'));
     }

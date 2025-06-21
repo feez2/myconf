@@ -44,10 +44,10 @@ class DecisionController extends Controller
         // Search by title
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where('title', 'like', "%{$search}%");
+            $query->where('title', 'ilike', "%{$search}%");
         }
 
-        $papers = $query->orderBy('title')->paginate(10);
+        $papers = $query->orderBy('title')->paginate(10)->appends($request->all());
 
         return view('decisions.index', compact('conference', 'papers'));
     }

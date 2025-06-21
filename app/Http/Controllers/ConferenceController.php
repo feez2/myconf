@@ -34,9 +34,9 @@ class ConferenceController extends Controller
         if ($request->has('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('acronym', 'like', "%{$search}%")
-                  ->orWhere('location', 'like', "%{$search}%");
+                $q->where('title', 'ilike', "%{$search}%")
+                  ->orWhere('acronym', 'ilike', "%{$search}%")
+                  ->orWhere('location', 'ilike', "%{$search}%");
             });
         }
 
@@ -60,7 +60,7 @@ class ConferenceController extends Controller
         // Order by start date
         $query->orderBy('start_date', 'desc');
 
-        $conferences = $query->paginate(10);
+        $conferences = $query->paginate(10)->appends($request->all());
 
         return view('conferences.index', compact('conferences'));
     }
@@ -219,7 +219,7 @@ class ConferenceController extends Controller
         return view('conferences.chairs', compact('conference', 'users'));
     }
 
-    public function submissions(Conference $conference)
+    public function submissions(Request $request, Conference $conference)
     {
         // Check if user is authorized to view submissions
         if (auth()->user()->role !== 'admin' &&
@@ -231,22 +231,22 @@ class ConferenceController extends Controller
         $query = $conference->papers()->with(['user', 'authors']);
 
         // Filter by status
-        if (request('status')) {
-            $query->where('status', request('status'));
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
         }
 
         // Search by title or author
-        if (request('search')) {
-            $search = request('search');
+        if ($request->filled('search')) {
+            $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
+                $q->where('title', 'ilike', "%{$search}%")
                   ->orWhereHas('authors', function($q) use ($search) {
-                      $q->where('name', 'like', "%{$search}%");
+                      $q->where('name', 'ilike', "%{$search}%");
                   });
             });
         }
 
-        $papers = $query->latest()->paginate(10);
+        $papers = $query->latest()->paginate(10)->appends($request->all());
 
         return view('conferences.submissions', compact('conference', 'papers'));
     }
@@ -257,7 +257,7 @@ class ConferenceController extends Controller
      * @param  \App\Models\Conference  $conference
      * @return \Illuminate\View\View
      */
-    public function trackInvitations(Conference $conference)
+    public function trackInvitations(Request $request, Conference $conference)
     {
         // Allow admin and users with managePC permission
         if (!auth()->user()->isAdmin() && !auth()->user()->can('managePC', $conference)) {
@@ -266,17 +266,18 @@ class ConferenceController extends Controller
 
         $query = $conference->programCommittees()
             ->with('user')
-            ->when(request('status'), function ($query, $status) {
-                return $query->where('status', $status);
+            ->when($request->filled('status'), function ($query) use ($request) {
+                return $query->where('status', $request->status);
             })
-            ->when(request('search'), function ($query, $search) {
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $search = $request->search;
                 return $query->whereHas('user', function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%")
-                      ->orWhere('email', 'like', "%{$search}%");
+                    $q->where('name', 'ilike', "%{$search}%")
+                    ->orWhere('email', 'ilike', "%{$search}%");
                 });
             });
 
-        $invitations = $query->paginate(10);
+        $invitations = $query->paginate(10)->appends($request->all());
 
         // Get only reviewers who are not already in the program committee
         $reviewers = User::where('role', 'reviewer')

@@ -27,12 +27,12 @@ class UserController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                $q->where('name', 'ilike', "%{$search}%")
+                  ->orWhere('email', 'ilike', "%{$search}%");
             });
         }
 
-        $users = $query->latest()->paginate(10);
+        $users = $query->latest()->paginate(10)->appends($request->all());
         return view('users.index', compact('users'));
     }
 
@@ -107,4 +107,4 @@ class UserController extends Controller
         return redirect()->route('users.index')
             ->with('success', 'User deleted successfully.');
     }
-} 
+}
