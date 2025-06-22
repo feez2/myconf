@@ -34,67 +34,76 @@
                 </form>
 
                 <!-- Submissions Table -->
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>Title</th>
-                                <th>Authors</th>
-                                <th>Submitted By</th>
-                                <th>Status</th>
-                                <th>Submission Date</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($papers as $paper)
+                @if($papers->isEmpty())
+                    <div class="alert alert-info d-flex align-items-center justify-content-center gap-2 mt-4" role="alert">
+                        <i class="bi bi-info-circle-fill fs-4 text-info"></i>
+                        <div>
+                            <strong>No submissions found.</strong>
+                        </div>
+                    </div>
+                @else
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
                                 <tr>
-                                    <td>{{ $paper->title }}</td>
-                                    <td>
-                                        @foreach($paper->authors as $author)
-                                            <span class="badge bg-info me-1">{{ $author->name }}</span>
-                                        @endforeach
-                                    </td>
-                                    <td>{{ $paper->user->name }}</td>
-                                    <td>
-                                        <span class="badge bg-{{ $paper->status === 'submitted' ? 'primary' :
-                                            ($paper->status === 'under_review' ? 'warning' :
-                                            ($paper->status === 'accepted' ? 'success' :
-                                            ($paper->status === 'rejected' ? 'danger' : 'secondary'))) }}">
-                                            {{ ucfirst(str_replace('_', ' ', $paper->status)) }}
-                                        </span>
-                                    </td>
-                                    <td>{{ $paper->created_at->format('M d, Y') }}</td>
-                                    <td>
-                                        <div class="d-flex gap-2">
-                                            <a href="{{ route('papers.show', $paper) }}"
-                                               class="btn btn-sm btn-primary">
-                                                <i class="bi bi-eye"></i> View
-                                            </a>
-                                            @if($paper->status === 'submitted' && auth()->user()->can('assignReviewers', $paper))
-                                                {{-- <button type="button"
-                                                        class="btn btn-sm btn-success"
-                                                        data-bs-toggle="modal"
-                                                        data-bs-target="#inviteReviewersModal{{ $paper->id }}">
-                                                    <i class="bi bi-person-plus"></i> Assign Reviewers
-                                                </button> --}}
-                                            @endif
-                                        </div>
-                                    </td>
+                                    <th>Title</th>
+                                    <th>Authors</th>
+                                    <th>Submitted By</th>
+                                    <th>Status</th>
+                                    <th>Submission Date</th>
+                                    <th>Actions</th>
                                 </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="6" class="text-center">No submissions found.</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
+                            </thead>
+                            <tbody>
+                                @foreach($papers as $paper)
+                                    <tr>
+                                        <td>{{ $paper->title }}</td>
+                                        <td>
+                                            @foreach($paper->authors as $author)
+                                                <span class="badge bg-info me-1">{{ $author->name }}</span>
+                                            @endforeach
+                                        </td>
+                                        <td>{{ $paper->user->name }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ $paper->status === 'submitted' ? 'primary' :
+                                                ($paper->status === 'under_review' ? 'warning' :
+                                                ($paper->status === 'accepted' ? 'success' :
+                                                ($paper->status === 'rejected' ? 'danger' : 'secondary'))) }}">
+                                                {{ ucfirst(str_replace('_', ' ', $paper->status)) }}
+                                            </span>
+                                        </td>
+                                        <td>{{ $paper->created_at->format('M d, Y') }}</td>
+                                        <td>
+                                            <div class="d-flex gap-2">
+                                                <a href="{{ route('papers.show', $paper) }}"
+                                                class="btn btn-sm btn-primary">
+                                                    <i class="bi bi-eye"></i> View
+                                                </a>
+                                                @if($paper->status === 'submitted' && auth()->user()->can('assignReviewers', $paper))
+                                                    {{-- <button type="button"
+                                                            class="btn btn-sm btn-success"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#inviteReviewersModal{{ $paper->id }}">
+                                                        <i class="bi bi-person-plus"></i> Assign Reviewers
+                                                    </button> --}}
+                                                @endif
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {{-- @empty
+                                    <tr>
+                                        <td colspan="6" class="text-center">No submissions found.</td>
+                                    </tr> --}}
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
 
-                <!-- Pagination -->
-                <div class="d-flex justify-content-center mt-4">
-                    {{ $papers->links('pagination::bootstrap-5') }}
-                </div>
+                    <!-- Pagination -->
+                    <div class="d-flex justify-content-center mt-4">
+                        {{ $papers->links('pagination::bootstrap-5') }}
+                    </div>
+                @endif
             </div>
         </div>
     </div>

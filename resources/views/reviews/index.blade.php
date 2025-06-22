@@ -35,82 +35,90 @@
                         </div>
                     </form>
 
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Paper Title</th>
-                                    <th>Conference</th>
-                                    <th>Author</th>
-                                    <th>Submitted</th>
-                                    <th>Review Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($papers as $paper)
-                                <tr>
-                                    <td>{{ Str::limit($paper->title, 50) }}</td>
-                                    <td>{{ $paper->conference->acronym }}</td>
-                                    <td>{{ $paper->author->name }}</td>
-                                    <td>{{ $paper->created_at->diffForHumans() }}</td>
-                                    <td>
-                                        @if($paper->reviews->isEmpty())
-                                            <span class="badge bg-warning text-dark">Not Started</span>
-                                        @else
-                                            @php
-                                                $review = $paper->reviews->first();
-                                            @endphp
-                                            <span class="badge
-                                                @if($review->status === 'completed') bg-success
-                                                @else bg-warning text-dark
-                                                @endif">
-                                                {{ $review->status === 'completed' ? 'Completed' : 'Pending' }}
-                                            </span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <a href="{{ route('papers.show', $paper) }}" class="btn btn-sm btn-info px-3 shadow-sm">
-                                            <i class="bi bi-file-earmark-text me-1"></i> View Paper
-                                        </a>
-
-                                        @if($paper->reviews->isEmpty())
-                                            <form action="{{ route('reviews.store') }}" method="POST" class="d-inline">
-                                                @csrf
-                                                <input type="hidden" name="paper_id" value="{{ $paper->id }}">
-                                                <button type="submit" class="btn btn-sm btn-primary px-3 shadow-sm">
-                                                    <i class="bi bi-play-circle me-1"></i> Start Review
-                                                </button>
-                                            </form>
-                                        @else
-                                            @php
-                                                $review = $paper->reviews->first();
-                                            @endphp
-
-                                            @if($review->status === 'pending')
-                                                <a href="{{ route('reviews.edit', $review) }}" class="btn btn-sm btn-success px-3 shadow-sm">
-                                                    <i class="bi bi-pencil-square me-1"></i> Submit Review
-                                                </a>
-                                            @else
-                                                <a href="{{ route('reviews.show', $review) }}" class="btn btn-sm btn-secondary px-3 shadow-sm">
-                                                    <i class="bi bi-eye me-1"></i> View Review
-                                                </a>
-                                            @endif
-                                        @endif
-                                    </td>
-                                </tr>
-                                @empty
+                    @if($papers->isEmpty())
+                        <div class="alert alert-info d-flex align-items-center justify-content-center gap-2 mt-4" role="alert">
+                            <i class="bi bi-info-circle-fill fs-4 text-info"></i>
+                            <div>
+                                <strong>No papers found.</strong>
+                            </div>
+                        </div>
+                    @else
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
                                     <tr>
-                                        <td colspan="6" class="text-center">No papers found</td>
+                                        <th>Paper Title</th>
+                                        <th>Conference</th>
+                                        <th>Author</th>
+                                        <th>Submitted</th>
+                                        <th>Review Status</th>
+                                        <th>Actions</th>
                                     </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="d-flex justify-content-center mt-3">
-                        {{ $papers->links('pagination::bootstrap-5') }}
-                    </div>
-                {{-- @endif --}}
+                                </thead>
+                                <tbody>
+                                    @foreach($papers as $paper)
+                                    <tr>
+                                        <td>{{ Str::limit($paper->title, 50) }}</td>
+                                        <td>{{ $paper->conference->acronym }}</td>
+                                        <td>{{ $paper->author->name }}</td>
+                                        <td>{{ $paper->created_at->diffForHumans() }}</td>
+                                        <td>
+                                            @if($paper->reviews->isEmpty())
+                                                <span class="badge bg-warning text-dark">Not Started</span>
+                                            @else
+                                                @php
+                                                    $review = $paper->reviews->first();
+                                                @endphp
+                                                <span class="badge
+                                                    @if($review->status === 'completed') bg-success
+                                                    @else bg-warning text-dark
+                                                    @endif">
+                                                    {{ $review->status === 'completed' ? 'Completed' : 'Pending' }}
+                                                </span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            <a href="{{ route('papers.show', $paper) }}" class="btn btn-sm btn-info px-3 shadow-sm">
+                                                <i class="bi bi-file-earmark-text me-1"></i> View Paper
+                                            </a>
+
+                                            @if($paper->reviews->isEmpty())
+                                                <form action="{{ route('reviews.store') }}" method="POST" class="d-inline">
+                                                    @csrf
+                                                    <input type="hidden" name="paper_id" value="{{ $paper->id }}">
+                                                    <button type="submit" class="btn btn-sm btn-primary px-3 shadow-sm">
+                                                        <i class="bi bi-play-circle me-1"></i> Start Review
+                                                    </button>
+                                                </form>
+                                            @else
+                                                @php
+                                                    $review = $paper->reviews->first();
+                                                @endphp
+
+                                                @if($review->status === 'pending')
+                                                    <a href="{{ route('reviews.edit', $review) }}" class="btn btn-sm btn-success px-3 shadow-sm">
+                                                        <i class="bi bi-pencil-square me-1"></i> Submit Review
+                                                    </a>
+                                                @else
+                                                    <a href="{{ route('reviews.show', $review) }}" class="btn btn-sm btn-secondary px-3 shadow-sm">
+                                                        <i class="bi bi-eye me-1"></i> View Review
+                                                    </a>
+                                                @endif
+                                            @endif
+                                        </td>
+                                    </tr>
+                                    {{-- @empty
+                                        <tr>
+                                            <td colspan="6" class="text-center">No papers found</td>
+                                        </tr> --}}
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="d-flex justify-content-center mt-3">
+                            {{ $papers->links('pagination::bootstrap-5') }}
+                        </div>
+                    @endif
             </div>
         </div>
     </div>

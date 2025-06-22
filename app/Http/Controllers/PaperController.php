@@ -23,14 +23,34 @@ class PaperController extends Controller
         $this->middleware('auth');
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $papers = Paper::with('conference')
-            ->where('user_id', auth()->id())
-            ->latest()
-            ->paginate(10);
+        $query = Paper::with('conference')
+            ->where('user_id', auth()->id());
 
-        return view('papers.index', compact('papers'));
+        // Search by title or conference acronym
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('title', 'ilike', "%{$search}%")
+                  ->orWhereHas('conference', function($qc) use ($search) {
+                      $qc->where('acronym', 'ilike', "%{$search}%");
+                  });
+            });
+        }
+
+        // Filter by status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $papers = $query->latest()->paginate(10)->appends($request->all());
+
+        $statusOptions = \App\Models\Paper::statusOptions();
+
+        return view('papers.index', compact('papers', 'statusOptions'))
+            ->with('search', $request->search)
+            ->with('status', $request->status);
     }
 
     public function create(Conference $conference)

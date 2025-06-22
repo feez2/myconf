@@ -21,13 +21,35 @@
 
         <div class="card">
             <div class="card-body">
+                <!-- Filters -->
+                <form action="{{ route('papers.index') }}" method="GET" class="mb-4">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <select name="status" class="form-select">
+                                <option value="">All Statuses</option>
+                                @foreach($statusOptions as $key => $label)
+                                    <option value="{{ $key }}" {{ request('status', $status ?? '') == $key ? 'selected' : '' }}>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <input type="text" name="search" class="form-control"
+                                   placeholder="Search by title or conference acronym..." value="{{ request('search', $search ?? '') }}">
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary w-100 shadow-sm">
+                                <i class="bi bi-funnel-fill me-1"></i> Filter
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
                 @if($papers->isEmpty())
-                    <div class="text-center py-4">
-                        <h5>No papers submitted yet</h5>
-                        <p class="text-muted">Submit your first paper to a conference</p>
-                        <a href="{{ route('conferences.index') }}" class="btn btn-primary">
-                            Browse Conferences
-                        </a>
+                    <div class="alert alert-info d-flex align-items-center justify-content-center gap-2 mt-4" role="alert">
+                        <i class="bi bi-info-circle-fill fs-4 text-info"></i>
+                        <div>
+                            <strong>No papers found.</strong>
+                        </div>
                     </div>
                 @else
                     <div class="table-responsive">

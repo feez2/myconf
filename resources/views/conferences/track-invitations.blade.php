@@ -38,56 +38,65 @@
                 </form>
 
                 <!-- Invitations Table -->
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Role</th>
-                                <th>Status</th>
-                                <th>Invited At</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($invitations as $invitation)
+                @if($invitations->isEmpty())
+                    <div class="alert alert-info d-flex align-items-center justify-content-center gap-2 mt-4" role="alert">
+                        <i class="bi bi-info-circle-fill fs-4 text-info"></i>
+                        <div>
+                            <strong>No invitations found.</strong>
+                        </div>
+                    </div>
+                @else
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
                                 <tr>
-                                    <td>{{ $invitation->user->name }}</td>
-                                    <td>{{ $invitation->user->email }}</td>
-                                    <td>{{ ucfirst($invitation->role) }}</td>
-                                    <td>
-                                        <span class="badge bg-{{ $invitation->status === 'pending' ? 'warning' :
-                                            ($invitation->status === 'accepted' ? 'success' : 'danger') }}">
-                                            {{ ucfirst($invitation->status) }}
-                                        </span>
-                                    </td>
-                                    <td>{{ $invitation->created_at->format('M d, Y H:i') }}</td>
-                                    <td>
-                                        @if($invitation->status === 'pending')
-                                            <form action="{{ route('conferences.resend-invitation', [$conference, $invitation]) }}"
-                                                  method="POST" class="d-inline">
-                                                @csrf
-                                                <button type="submit" class="btn btn-sm btn-warning text-white shadow-sm px-3 d-inline-flex align-items-center">
-                                                    <i class="bi bi-envelope me-1"></i> Resend
-                                                </button>
-                                            </form>
-                                        @endif
-                                    </td>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                    <th>Invited At</th>
+                                    <th>Actions</th>
                                 </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="6" class="text-center">No invitations found.</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
+                            </thead>
+                            <tbody>
+                                @foreach($invitations as $invitation)
+                                    <tr>
+                                        <td>{{ $invitation->user->name }}</td>
+                                        <td>{{ $invitation->user->email }}</td>
+                                        <td>{{ ucfirst($invitation->role) }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ $invitation->status === 'pending' ? 'warning' :
+                                                ($invitation->status === 'accepted' ? 'success' : 'danger') }}">
+                                                {{ ucfirst($invitation->status) }}
+                                            </span>
+                                        </td>
+                                        <td>{{ $invitation->created_at->format('M d, Y H:i') }}</td>
+                                        <td>
+                                            @if($invitation->status === 'pending')
+                                                <form action="{{ route('conferences.resend-invitation', [$conference, $invitation]) }}"
+                                                    method="POST" class="d-inline">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-sm btn-warning text-white shadow-sm px-3 d-inline-flex align-items-center">
+                                                        <i class="bi bi-envelope me-1"></i> Resend
+                                                    </button>
+                                                </form>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                {{-- @empty
+                                    <tr>
+                                        <td colspan="6" class="text-center">No invitations found.</td>
+                                    </tr> --}}
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
 
-                <!-- Pagination -->
-                <div class="d-flex justify-content-center mt-4">
-                    {{ $invitations->links('pagination::bootstrap-5') }}
-                </div>
+                    <!-- Pagination -->
+                    <div class="d-flex justify-content-center mt-4">
+                        {{ $invitations->links('pagination::bootstrap-5') }}
+                    </div>
+                @endif
             </div>
         </div>
     </div>

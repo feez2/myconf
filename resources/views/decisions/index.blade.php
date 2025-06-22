@@ -46,76 +46,83 @@ use App\Models\Paper;
                                 </div>
                             </form>
 
-                            <div class="table-responsive">
-                                <table class="table table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>Title</th>
-                                            <th>Author</th>
-                                            <th>Reviews</th>
-                                            <th>Average Score</th>
-                                            <th>Status</th>
-                                            <th>Decision Date</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @forelse($papers as $paper)
+                            @if($papers->isEmpty())
+                                <div class="alert alert-info d-flex align-items-center justify-content-center gap-2 mt-4" role="alert">
+                                    <i class="bi bi-info-circle-fill fs-4 text-info"></i>
+                                    <div>
+                                        <strong>No papers found.</strong>
+                                    </div>
+                                </div>
+                            @else
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
                                             <tr>
-                                                <td>{{ $paper->title }}</td>
-                                                <td>{{ $paper->author->name }}</td>
-                                                <td>
-                                                    {{ $paper->reviews->where('status', 'completed')->count() }} /
-                                                    {{ $paper->reviews->count() }}
-                                                </td>
-                                                <td>
-                                                    @php
-                                                        $completedReviews = $paper->reviews->where('status', 'completed');
-                                                        $avgScore = $completedReviews->avg('score');
-                                                    @endphp
-                                                    {{ $avgScore ? number_format($avgScore, 1) : 'N/A' }}
-                                                </td>
-                                                <td>
-                                                    <span class="badge bg-{{ $paper->status_color }}">
-                                                        {{ $paper->status }}
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    @if($paper->decision_made_at)
-                                                        <span class="text-muted">
-                                                            {{ $paper->decision_made_at->format('M d, Y') }}
+                                                <th>Title</th>
+                                                <th>Author</th>
+                                                <th>Reviews</th>
+                                                <th>Average Score</th>
+                                                <th>Status</th>
+                                                <th>Decision Date</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($papers as $paper)
+                                                <tr>
+                                                    <td>{{ $paper->title }}</td>
+                                                    <td>{{ $paper->author->name }}</td>
+                                                    <td>
+                                                        {{ $paper->reviews->where('status', 'completed')->count() }} /
+                                                        {{ $paper->reviews->count() }}
+                                                    </td>
+                                                    <td>
+                                                        @php
+                                                            $completedReviews = $paper->reviews->where('status', 'completed');
+                                                            $avgScore = $completedReviews->avg('score');
+                                                        @endphp
+                                                        {{ $avgScore ? number_format($avgScore, 1) : 'N/A' }}
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge bg-{{ $paper->status_color }}">
+                                                            {{ $paper->status }}
                                                         </span>
-                                                    @else
-                                                        <span class="badge bg-warning">Pending</span>
-                                                    @endif
-                                                </td>
-                                                <td>
-                                                    @if(!in_array($paper->status, [Paper::STATUS_ACCEPTED, Paper::STATUS_REJECTED]))
-                                                        <a href="{{ route('decisions.create', $paper) }}"
-                                                        class="btn btn-sm btn-success shadow-sm">
-                                                            <i class="bi bi-check2-square me-1"></i> Make Decision
-                                                        </a>
-                                                    @else
-                                                        <a href="{{ route('decisions.show', $paper) }}"
-                                                        class="btn btn-sm btn-secondary shadow-sm">
-                                                            <i class="bi bi-eye-fill me-1"></i> View Decision
-                                                        </a>
-                                                    @endif
-                                                </td>
-                                            </tr>
-                                        @empty
-                                            <tr>
-                                                <td colspan="6" class="text-center">No papers found</td>
-                                            </tr>
-                                        @endforelse
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <div class="d-flex justify-content-center mt-4">
-                                {{ $papers->links('pagination::bootstrap-5') }}
-                            </div>
-                        {{-- @endif --}}
+                                                    </td>
+                                                    <td>
+                                                        @if($paper->decision_made_at)
+                                                            <span class="text-muted">
+                                                                {{ $paper->decision_made_at->format('M d, Y') }}
+                                                            </span>
+                                                        @else
+                                                            <span class="badge bg-warning">Pending</span>
+                                                        @endif
+                                                    </td>
+                                                    <td>
+                                                        @if(!in_array($paper->status, [Paper::STATUS_ACCEPTED, Paper::STATUS_REJECTED]))
+                                                            <a href="{{ route('decisions.create', $paper) }}"
+                                                            class="btn btn-sm btn-success shadow-sm">
+                                                                <i class="bi bi-check2-square me-1"></i> Make Decision
+                                                            </a>
+                                                        @else
+                                                            <a href="{{ route('decisions.show', $paper) }}"
+                                                            class="btn btn-sm btn-secondary shadow-sm">
+                                                                <i class="bi bi-eye-fill me-1"></i> View Decision
+                                                            </a>
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                            {{-- @empty
+                                                <tr>
+                                                    <td colspan="6" class="text-center">No papers found</td>
+                                                </tr> --}}
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="d-flex justify-content-center mt-4">
+                                    {{ $papers->links('pagination::bootstrap-5') }}
+                                </div>
+                            @endif
                     </div>
                 </div>
             </div>
