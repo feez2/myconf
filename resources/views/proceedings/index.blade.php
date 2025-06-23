@@ -8,11 +8,11 @@
                         <i class="bi bi-download"></i> Download PDF
                     </a>
                 @endif
-                @can('manageProceedings', $conference)
+                {{-- @can('manageProceedings', $conference)
                     <a href="{{ route('proceedings.create', $conference) }}" class="btn btn-primary">
                         Create New Proceedings
                     </a>
-                @endcan
+                @endcan --}}
             </div>
         </div>
 
@@ -57,7 +57,7 @@
                                                 <i class="bi bi-pencil"></i> Edit
                                             </a>
                                             @if($proceedings->generated_pdf_file)
-                                                <form action="{{ route('proceedings.generate', $conference) }}" 
+                                                <form action="{{ route('proceedings.generate', $conference) }}"
                                                       method="POST" class="d-inline">
                                                     @csrf
                                                     <button type="submit" class="btn btn-sm btn-warning"

@@ -217,11 +217,9 @@ class ReportController extends Controller
             $totalAssigned = $reviewer->reviews()->whereHas('paper', function ($q) use ($conference) {
                 $q->where('conference_id', $conference->id);
             })->count();
-            
             $completed = $reviewer->reviews()->whereHas('paper', function ($q) use ($conference) {
                 $q->where('conference_id', $conference->id);
             })->where('status', Review::STATUS_COMPLETED)->count();
-            
             if ($totalAssigned > 0) {
                 $reviewCompletionData[] = [
                     'reviewer' => $reviewer->name,
@@ -289,18 +287,45 @@ class ReportController extends Controller
             ]
         ];
 
-        // Review and decisions data
-        $papers = $conference->papers()
-            ->with(['authors', 'reviews.reviewer', 'user'])
-            ->orderBy('title')
-            ->get();
-
+        // Review stats detailed
+        $papers = $conference->papers()->with(['authors', 'reviews.reviewer', 'user'])->orderBy('title')->get();
         $reviewStatsDetailed = [
             'total_reviews' => $papers->sum(function($paper) { return $paper->reviews->count(); }),
             'average_reviews_per_paper' => $papers->avg(function($paper) { return $paper->reviews->count(); }),
             'review_completion_rate' => $papers->filter(function($paper) {
                 return $paper->reviews->count() >= 2;
-            })->count() / $papers->count() * 100,
+            })->count() / ($papers->count() ?: 1) * 100,
+        ];
+
+        // Proceedings data
+        $proceedings = $conference->proceedings()->first();
+        $proceedingsPapers = $proceedings ? $proceedings->papers()
+            ->where('status', Paper::STATUS_ACCEPTED)
+            ->where('approved_for_proceedings', true)
+            ->with('authors')
+            ->orderBy('title')
+            ->get() : collect();
+        $proceedingsStats = [
+            'total_papers' => $proceedingsPapers->count(),
+            'total_pages' => $proceedingsPapers->sum('pages'),
+            'publication_date' => $proceedings ? $proceedings->publication_date : null,
+            'isbn' => $proceedings ? $proceedings->isbn : null,
+            'issn' => $proceedings ? $proceedings->issn : null,
+        ];
+
+        // Program book data
+        $programBook = $conference->programBook()->first();
+        $sessions = $programBook ? $programBook->sessions()
+            ->with('presentations')
+            ->orderBy('date')
+            ->orderBy('start_time')
+            ->get()
+            ->groupBy('date') : collect();
+        $programBookStats = [
+            'total_sessions' => $programBook ? $programBook->sessions->count() : 0,
+            'total_presentations' => $programBook ? $programBook->sessions->sum(function($session) {
+                return $session->presentations->count();
+            }) : 0,
         ];
 
         $pdf = Pdf::loadView('reports.pdf.full-report', [
@@ -316,7 +341,13 @@ class ReportController extends Controller
             'conferencesData' => $conferencesData,
             'details' => $details,
             'papers' => $papers,
-            'reviewStatsDetailed' => $reviewStatsDetailed
+            'reviewStatsDetailed' => $reviewStatsDetailed,
+            'proceedings' => $proceedings,
+            'proceedingsPapers' => $proceedingsPapers,
+            'proceedingsStats' => $proceedingsStats,
+            'programBook' => $programBook,
+            'sessions' => $sessions,
+            'programBookStats' => $programBookStats,
         ]);
 
         return $pdf->download("{$conference->acronym}-full-report.pdf");

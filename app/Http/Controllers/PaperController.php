@@ -15,6 +15,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Notifications\ReviewAssigned;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class PaperController extends Controller
 {
@@ -122,14 +123,27 @@ class PaperController extends Controller
         return view('papers.show', compact('paper'));
     }
 
+    /**
+     * Download the paper file securely via controller.
+     */
+    public function download(Paper $paper)
+    {
+        $this->authorize('view', $paper);
+        if (!$paper->file_path || !Storage::disk('public')->exists($paper->file_path)) {
+            abort(404, 'File not found.');
+        }
+        return Storage::disk('public')->download($paper->file_path);
+    }
+
     public function edit(Paper $paper)
     {
-        $this->authorize('update', $paper);
+        // $this->authorize('update', $paper);
 
-        // Only allow editing if status is submitted
-        if ($paper->status !== Paper::STATUS_SUBMITTED) {
+        // Only allow editing if status is submitted and before submission deadline
+        $conference = $paper->conference;
+        if ($paper->status !== Paper::STATUS_SUBMITTED || (isset($conference->submission_deadline) && now()->gt($conference->submission_deadline))) {
             return redirect()->back()
-                ->with('error', 'You can only edit papers that are in "Submitted" status.');
+                ->with('error', 'You can only edit papers that are in "Submitted" status and before the submission deadline.');
         }
 
         return view('papers.edit', compact('paper'));
@@ -139,15 +153,16 @@ class PaperController extends Controller
     {
         $this->authorize('update', $paper);
 
-        // Only allow updating if status is submitted
-        if ($paper->status !== Paper::STATUS_SUBMITTED) {
+        // Only allow updating if status is submitted and before submission deadline
+        $conference = $paper->conference;
+        if ($paper->status !== Paper::STATUS_SUBMITTED || (isset($conference->submission_deadline) && now()->gt($conference->submission_deadline))) {
             return redirect()->back()
-                ->with('error', 'You can only update papers that are in "Submitted" status.');
+                ->with('error', 'You can only update papers that are in "Submitted" status and before the submission deadline.');
         }
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'abstract' => 'required|string|min:500|max:5000',
+            'abstract' => 'required|string|min:100|max:5000',
             'keywords' => 'required|string',
             'paper_file' => 'nullable|file|mimes:pdf,doc,docx|max:10240',
         ]);
@@ -353,5 +368,71 @@ class PaperController extends Controller
 
         return redirect()->route('dashboard')
             ->with('success', 'Review request rejected successfully.');
+    }
+
+    // Add a new method for revision submission
+    public function showRevisionForm(Paper $paper)
+    {
+        // $this->authorize('update', $paper);
+
+        // Only allow revision if status is revision_required
+        if ($paper->status !== Paper::STATUS_REVISION_REQUIRED) {
+            return redirect()->back()->with('error', 'You can only submit a revision if the paper requires revision.');
+        }
+
+        return view('papers.revision', compact('paper'));
+    }
+
+    public function submitRevision(Request $request, Paper $paper)
+    {
+        // $this->authorize('update', $paper);
+
+        // Only allow revision if status is revision_required
+        if ($paper->status !== Paper::STATUS_REVISION_REQUIRED) {
+            return redirect()->back()->with('error', 'You can only submit a revision if the paper requires revision.');
+        }
+
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'abstract' => 'required|string|min:100|max:5000',
+            'keywords' => 'required|string',
+            'paper_file' => 'required|file|mimes:pdf,doc,docx|max:10240',
+            'revision_summary' => 'required|string|min:50|max:1000',
+        ]);
+
+        // Store new file
+        $file = $request->file('paper_file');
+        $fileName = Str::slug($request->title) . '-revision-' . time() . '.' . $file->getClientOriginalExtension();
+        $filePath = $file->storeAs('papers/revisions', $fileName, 'public');
+
+        $paper->update([
+            'title' => $validated['title'],
+            'abstract' => $validated['abstract'],
+            'keywords' => array_map('trim', explode(',', $validated['keywords'])),
+            'file_path' => $filePath,
+            'revision_summary' => $validated['revision_summary'],
+            'revision_submitted_at' => now(),
+        ]);
+
+        // Optionally notify admin for new decision
+        // Notification::send(User::where('role', 'admin')->get(), new PaperRevisionSubmitted($paper));
+
+        return redirect()->route('papers.show', $paper)
+            ->with('success', 'Revision submitted successfully! The paper will be reviewed for a new decision.');
+    }
+
+    // Add a method to update all submitted papers to under_review after deadline
+    public function updateSubmittedToUnderReview()
+    {
+        \App\Models\Paper::updateSubmittedToUnderReview();
+    }
+
+    /**
+     * Download copyright transfer form template
+     */
+    public function downloadCopyrightForm()
+    {
+        $pdf = Pdf::loadView('papers.pdf.copyright-form');
+        return $pdf->download('copyright-transfer-form.pdf');
     }
 }

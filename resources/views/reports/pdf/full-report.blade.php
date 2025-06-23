@@ -105,54 +105,64 @@
     @endif
 
     <!-- Committees Section -->
-    <div class="section-title">Program Committees</div>
-    
-    @if($details['committees']['program_chairs']->isNotEmpty())
-        <div class="subsection-title">Program Chairs</div>
+    <div class="section-title">Committees</div>
+
+    <!-- Authors -->
+    <h3>Authors</h3>
+    @php
+        $authorPapers = $conference->papers()->with(['user', 'authors'])->get();
+        $authors = $authorPapers->map(function($paper) {
+            return [
+                'name' => $paper->user->name,
+                'email' => $paper->user->email,
+                'affiliation' => $paper->user->affiliation,
+                'paper_title' => $paper->title,
+                'paper_status' => $paper->status,
+                'submitted_at' => $paper->created_at
+            ];
+        })->unique('name')->sortBy('name');
+    @endphp
+    @if($authors->isEmpty())
+        <p>No authors have submitted papers yet.</p>
+    @else
         <table class="committee-table">
             <thead>
                 <tr>
                     <th>Name</th>
                     <th>Email</th>
                     <th>Affiliation</th>
+                    <th>Paper Title</th>
+                    <th>Status</th>
+                    <th>Submitted Date</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach($details['committees']['program_chairs'] as $member)
+                @foreach($authors as $author)
                     <tr>
-                        <td>{{ $member->user->name }}</td>
-                        <td>{{ $member->user->email }}</td>
-                        <td>{{ $member->user->affiliation ?? 'Not specified' }}</td>
+                        <td>{{ $author['name'] }}</td>
+                        <td>{{ $author['email'] }}</td>
+                        <td>{{ $author['affiliation'] ?? 'Not specified' }}</td>
+                        <td>{{ $author['paper_title'] }}</td>
+                        <td>
+                            <span class="badge badge-{{ $author['paper_status'] === 'submitted' ? 'primary' :
+                                ($author['paper_status'] === 'under_review' ? 'warning' :
+                                ($author['paper_status'] === 'accepted' ? 'success' :
+                                ($author['paper_status'] === 'rejected' ? 'danger' : 'secondary'))) }}">
+                                {{ ucfirst(str_replace('_', ' ', $author['paper_status'])) }}
+                            </span>
+                        </td>
+                        <td>{{ \Carbon\Carbon::parse($author['submitted_at'])->format('M d, Y') }}</td>
                     </tr>
                 @endforeach
             </tbody>
         </table>
     @endif
 
-    @if($details['committees']['area_chairs']->isNotEmpty())
-        <div class="subsection-title">Area Chairs</div>
-        <table class="committee-table">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Affiliation</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($details['committees']['area_chairs'] as $member)
-                    <tr>
-                        <td>{{ $member->user->name }}</td>
-                        <td>{{ $member->user->email }}</td>
-                        <td>{{ $member->user->affiliation ?? 'Not specified' }}</td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-    @endif
-
-    @if($details['committees']['reviewers']->isNotEmpty())
-        <div class="subsection-title">Reviewers</div>
+    <!-- Reviewers -->
+    <h3>Reviewers</h3>
+    @if($details['committees']['reviewers']->isEmpty())
+        <p>No reviewers assigned.</p>
+    @else
         <table class="committee-table">
             <thead>
                 <tr>
@@ -168,7 +178,13 @@
                         <td>{{ $member->user->name }}</td>
                         <td>{{ $member->user->email }}</td>
                         <td>{{ $member->user->affiliation ?? 'Not specified' }}</td>
-                        <td>{{ $papers->filter(function($paper) use ($member) { return $paper->reviews->where('reviewer_id', $member->user_id)->count() > 0; })->count() }}</td>
+                        <td>
+                            {{ $conference->papers()
+                                ->whereHas('reviews', function($query) use ($member) {
+                                    $query->where('reviewer_id', $member->user_id);
+                                })
+                                ->count() }}
+                        </td>
                     </tr>
                 @endforeach
             </tbody>
@@ -530,6 +546,162 @@
         @endforeach
     @else
         <p>No rejected papers.</p>
+    @endif
+
+    <div class="page-break"></div>
+
+    <!-- Proceedings Section -->
+    <div class="section-title">Proceedings</div>
+    @if($proceedings)
+        <div class="info-grid">
+            <div class="info-section">
+                <h4>Proceedings Information</h4>
+                <p><strong>Title:</strong> {{ $proceedings->title }}</p>
+                <p><strong>Publication Date:</strong> {{ $proceedings->publication_date ? $proceedings->publication_date->format('F j, Y') : 'Not set' }}</p>
+                <p><strong>ISBN:</strong> {{ $proceedings->isbn ?: 'Not assigned' }}</p>
+                <p><strong>ISSN:</strong> {{ $proceedings->issn ?: 'Not assigned' }}</p>
+            </div>
+            <div class="info-section">
+                <h4>Publication Statistics</h4>
+                <div class="stat-card">
+                    <div class="stat-value">{{ $proceedingsStats['total_papers'] }}</div>
+                    <div class="stat-label">Total Papers</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{{ $proceedingsStats['total_pages'] }}</div>
+                    <div class="stat-label">Total Pages</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{{ $proceedingsStats['total_papers'] > 0 ? number_format($proceedingsStats['total_pages'] / $proceedingsStats['total_papers'], 1) : 0 }}</div>
+                    <div class="stat-label">Average Pages per Paper</div>
+                </div>
+            </div>
+        </div>
+        <div class="subsection-title">Published Papers ({{ $proceedingsPapers->count() }})</div>
+        @if($proceedingsPapers->count() > 0)
+            <table class="chart-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Title</th>
+                        <th>Authors</th>
+                        <th>Pages</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($proceedingsPapers as $index => $paper)
+                        <tr>
+                            <td>{{ $index + 1 }}</td>
+                            <td><strong>{{ $paper->title }}</strong><br><small>{{ Str::limit($paper->abstract, 100) }}</small></td>
+                            <td>
+                                @if($paper->authors->count() > 0)
+                                    {{ $paper->authors->pluck('name')->implode(', ') }}
+                                @else
+                                    {{ $paper->user ? $paper->user->name : 'Unknown' }}
+                                @endif
+                            </td>
+                            <td>{{ $paper->pages ?: 'Not set' }}</td>
+                            <td><span class="badge badge-success">Published</span></td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        @else
+            <p>No papers have been published in the proceedings yet.</p>
+        @endif
+    @else
+        <p>Proceedings have not been created for this conference yet.</p>
+    @endif
+
+    <div class="page-break"></div>
+
+    <!-- Program Book Section -->
+    <div class="section-title">Program Book</div>
+    @if($programBook)
+        <div class="info-grid">
+            <div class="info-section">
+                <h4>Program Book Information</h4>
+                <p><strong>Title:</strong> {{ $programBook->title }}</p>
+                <p><strong>Date Range:</strong> {{ $programBook->start_date->format('F j, Y') }} - {{ $programBook->end_date->format('F j, Y') }}</p>
+                @if($programBook->welcome_message)
+                    <p><strong>Welcome Message:</strong> {{ Str::limit($programBook->welcome_message, 100) }}</p>
+                @endif
+                @if($programBook->general_information)
+                    <p><strong>General Information:</strong> {{ Str::limit($programBook->general_information, 100) }}</p>
+                @endif
+            </div>
+            <div class="info-section">
+                <h4>Event Statistics</h4>
+                <div class="stat-card">
+                    <div class="stat-value">{{ $programBookStats['total_sessions'] }}</div>
+                    <div class="stat-label">Total Sessions</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{{ $programBookStats['total_presentations'] }}</div>
+                    <div class="stat-label">Total Presentations</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{{ $programBookStats['total_sessions'] > 0 ? number_format($programBookStats['total_presentations'] / $programBookStats['total_sessions'], 1) : 0 }}</div>
+                    <div class="stat-label">Average Presentations per Session</div>
+                </div>
+            </div>
+        </div>
+        <div class="subsection-title">Program Schedule</div>
+        @if($sessions->count() > 0)
+            @foreach($sessions as $date => $daySessions)
+                <div class="subsection-title" style="color: #007bff; border-bottom: 2px solid #007bff; padding: 10px 0; margin: 20px 0 10px 0; font-size: 14px; font-weight: bold;">
+                    {{ \Carbon\Carbon::parse($date)->format('l, F j, Y') }}
+                </div>
+                @foreach($daySessions as $session)
+                    <div class="paper" style="border-left: 3px solid #007bff;">
+                        <div class="paper-title">{{ $session->title }}</div>
+                        <div class="paper-authors">{{ ucfirst($session->type) }} Session</div>
+                        <div style="font-size: 12px; color: #666;">
+                            <strong>Time:</strong> {{ $session->start_time->format('g:i A') }} - {{ $session->end_time->format('g:i A') }} |
+                            <strong>Location:</strong> {{ $session->location }}
+                            @if($session->session_chair)
+                                | <strong>Session Chair:</strong> {{ $session->session_chair }}
+                            @endif
+                            | <strong>Presentations:</strong> {{ $session->presentations->count() }}
+                        </div>
+                        @if($session->description)
+                            <div style="color: #666; margin-bottom: 10px; font-style: italic;">{{ $session->description }}</div>
+                        @endif
+                        @if($session->presentations->count() > 0)
+                            <table class="chart-table" style="font-size: 11px;">
+                                <thead>
+                                    <tr>
+                                        <th>Time</th>
+                                        <th>Title</th>
+                                        <th>Speaker</th>
+                                        <th>Affiliation</th>
+                                        <th>Paper</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($session->presentations as $presentation)
+                                        <tr>
+                                            <td>{{ $presentation->start_time->format('g:i A') }} - {{ $presentation->end_time->format('g:i A') }}</td>
+                                            <td><strong>{{ $presentation->title }}</strong><br><span style="color: #666; font-size: 10px;">{{ Str::limit($presentation->abstract, 80) }}</span></td>
+                                            <td>{{ $presentation->speaker }}</td>
+                                            <td>{{ $presentation->affiliation }}</td>
+                                            <td>{{ $presentation->paper ? $presentation->paper->title : '-' }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        @else
+                            <p>No presentations in this session.</p>
+                        @endif
+                    </div>
+                @endforeach
+            @endforeach
+        @else
+            <p>No sessions scheduled in the program book yet.</p>
+        @endif
+    @else
+        <p>Program book has not been created for this conference yet.</p>
     @endif
 </body>
 </html>

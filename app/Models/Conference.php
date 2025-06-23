@@ -103,7 +103,7 @@ class Conference extends Model
 
     public function activePapers()
     {
-        return $this->papers()->where('status', '!=', 'withdrawn');
+        return $this->papers();
     }
 
     public function programCommittees()

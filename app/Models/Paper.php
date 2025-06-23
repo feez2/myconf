@@ -26,12 +26,15 @@ class Paper extends Model
         'proceedings_id',
         'camera_ready_file',
         'camera_ready_submitted_at',
-        'copyright_form_file'
+        'copyright_form_file',
+        'revision_summary',
+        'revision_submitted_at'
     ];
 
     protected $casts = [
         'decision_made_at' => 'datetime',
-        'camera_ready_deadline' => 'datetime'
+        'camera_ready_deadline' => 'datetime',
+        'revision_submitted_at' => 'datetime'
     ];
 
     // Status constants
@@ -40,7 +43,6 @@ class Paper extends Model
     const STATUS_REVISION_REQUIRED = 'revision_required';
     const STATUS_ACCEPTED = 'accepted';
     const STATUS_REJECTED = 'rejected';
-    const STATUS_WITHDRAWN = 'withdrawn';
 
     public static function statusOptions()
     {
@@ -50,7 +52,6 @@ class Paper extends Model
             self::STATUS_REVISION_REQUIRED => 'Revision Required',
             self::STATUS_ACCEPTED => 'Accepted',
             self::STATUS_REJECTED => 'Rejected',
-            self::STATUS_WITHDRAWN => 'Withdrawn',
         ];
     }
 
@@ -160,5 +161,20 @@ class Paper extends Model
     public function presentation()
     {
         return $this->hasOne(Presentation::class);
+    }
+
+    /**
+     * Update all submitted papers to under_review if their conference submission deadline has passed.
+     */
+    public static function updateSubmittedToUnderReview()
+    {
+        $now = now();
+        $papers = self::where('status', self::STATUS_SUBMITTED)
+            ->whereHas('conference', function($q) use ($now) {
+                $q->where('submission_deadline', '<', $now);
+            })->get();
+        foreach ($papers as $paper) {
+            $paper->update(['status' => self::STATUS_UNDER_REVIEW]);
+        }
     }
 }

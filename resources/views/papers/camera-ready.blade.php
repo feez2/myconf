@@ -38,12 +38,12 @@
                                 @enderror
                                 <small class="text-muted">
                                     Signed copyright form (PDF, max 2MB).
-                                    <a href="#" target="_blank">Download form template</a>
+                                    <a href="{{ route('papers.download-copyright-form') }}" target="_blank">Download form template</a>
                                 </small>
                             </div>
 
                             <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                                <a href="{{ route('papers.show', $paper) }}" class="btn btn-secondary me-md-2">
+                                <a href="{{ route('papers.index') }}" class="btn btn-secondary me-md-2">
                                     Cancel
                                 </a>
                                 <button type="submit" class="btn btn-primary">

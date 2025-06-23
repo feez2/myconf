@@ -63,6 +63,7 @@ use App\Models\Paper;
                                                 <th>Reviews</th>
                                                 <th>Average Score</th>
                                                 <th>Status</th>
+                                                <th>Type</th>
                                                 <th>Decision Date</th>
                                                 <th>Actions</th>
                                             </tr>
@@ -87,6 +88,16 @@ use App\Models\Paper;
                                                         <span class="badge bg-{{ $paper->status_color }}">
                                                             {{ $paper->status }}
                                                         </span>
+                                                    </td>
+                                                    <td>
+                                                        @if($paper->revision_submitted_at)
+                                                            <span class="badge bg-warning">Revision</span>
+                                                            <small class="d-block text-muted">
+                                                                {{ $paper->revision_submitted_at->format('M d, Y') }}
+                                                            </small>
+                                                        @else
+                                                            <span class="badge bg-primary">Original</span>
+                                                        @endif
                                                     </td>
                                                     <td>
                                                         @if($paper->decision_made_at)

@@ -257,7 +257,6 @@ class ProceedingsController extends Controller
 
         // Get papers for the proceedings
         $papers = $proceedings->papers()
-            ->where('status', 'accepted')
             ->with(['author', 'authors'])
             ->orderBy('title')
             ->get();

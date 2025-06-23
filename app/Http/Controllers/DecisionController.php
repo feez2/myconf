@@ -32,6 +32,7 @@ class DecisionController extends Controller
 
         $query = $conference->papers()
             ->with(['author', 'reviews.reviewer'])
+            // ->whereIn('status', [Paper::STATUS_UNDER_REVIEW, Paper::STATUS_REVISION_REQUIRED])
             ->whereHas('reviews', function ($query) {
                 $query->where('status', 'completed');
             });

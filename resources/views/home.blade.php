@@ -35,9 +35,9 @@
                                 <li class="list-group-item"><strong>Status:</strong> <span class="badge bg-primary">{{ ucfirst($conference->status) }}</span></li>
                             </ul>
                         </div>
-                        <div class="card-footer bg-transparent">
-                            <a href="#" class="btn btn-primary">View Details</a>
-                        </div>
+                        {{-- <div class="card-footer bg-transparent">
+                            <a href="{{ route('conferences.show', $conference) }}" class="btn btn-primary">View Details</a>
+                        </div> --}}
                     </div>
                 </div>
             @empty

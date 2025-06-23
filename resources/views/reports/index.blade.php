@@ -219,12 +219,12 @@
                         <div class="card h-100">
                             <div class="card-header d-flex justify-content-between align-items-center">
                                 <h4>Submission Statistics</h4>
-                                <div>
+                                {{-- <div>
                                     <a href="{{ route('reports.download.conference-details', $conference) }}"
                                     class="btn btn-sm btn-success d-inline-flex align-items-center shadow-sm px-3 text-white">
                                         <i class="bi bi-download me-1"></i> Download
                                     </a>
-                                </div>
+                                </div> --}}
                             </div>
                             <div class="card-body">
                                 <div class="row text-center">
@@ -254,12 +254,12 @@
                         <div class="card h-100">
                             <div class="card-header d-flex justify-content-between align-items-center">
                                 <h4>Review Statistics</h4>
-                                <div>
+                                {{-- <div>
                                     <a href="{{ route('reports.download.conference-details', $conference) }}"
                                     class="btn btn-sm btn-success d-inline-flex align-items-center shadow-sm px-3 text-white">
                                         <i class="bi bi-download me-1"></i> Download
                                     </a>
-                                </div>
+                                </div> --}}
                             </div>
                             <div class="card-body">
                                 @if($stats['review'])
@@ -294,18 +294,18 @@
 
     <!-- Chart.js Library -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+
     <style>
         .chart-container {
             position: relative;
             height: 300px;
             width: 100%;
         }
-        
+
         .chart-container.horizontal {
             height: 400px;
         }
-        
+
         .no-data-message {
             display: flex;
             align-items: center;
@@ -314,16 +314,16 @@
             color: #6c757d;
             font-style: italic;
         }
-        
+
         .analytics-card {
             transition: transform 0.2s ease-in-out;
         }
-        
+
         .analytics-card:hover {
             transform: translateY(-2px);
         }
     </style>
-    
+
     <script>
         // Chart 1: Submissions by Status (Pie Chart)
         @if(array_sum($chartData) > 0)

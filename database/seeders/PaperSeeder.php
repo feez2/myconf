@@ -86,8 +86,8 @@ class PaperSeeder extends Seeder
         ];
 
         // Status distribution for realistic data
-        $statuses = ['submitted', 'under_review', 'revision_required', 'accepted', 'rejected', 'withdrawn'];
-        $statusWeights = [25, 30, 15, 20, 8, 2]; // Percentages for realistic distribution
+        $statuses = ['submitted', 'under_review', 'revision_required', 'accepted', 'rejected'];
+        $statusWeights = [25, 30, 15, 20, 10]; // Adjusted percentages for realistic distribution
 
         // Create papers with varied submission dates and statuses
         foreach ($conferences as $conference) {

@@ -53,6 +53,11 @@ Route::middleware('auth')->group(function () {
          ->name('conferences.chairs.store');
     Route::post('/conferences/{conference}/program-chairs', [ConferenceController::class, 'assignProgramChairs'])
          ->name('conferences.program-chairs.store');
+    
+    // Download copyright form template (must be before papers resource route)
+    Route::get('/papers/download-copyright-form', [PaperController::class, 'downloadCopyrightForm'])
+        ->name('papers.download-copyright-form');
+    
     // Paper submission routes
     Route::resource('papers', PaperController::class)->except(['create']);
     Route::get('/conferences/{conference}/papers/create', [PaperController::class, 'create'])
@@ -115,6 +120,7 @@ Route::middleware('auth')->group(function () {
         ->name('papers.camera-ready-form');
     Route::post('/papers/{paper}/camera-ready', [PaperController::class, 'submitCameraReady'])
         ->name('papers.submit-camera-ready');
+    
     // Notification routes
     Route::prefix('notifications')->group(function () {
         Route::get('/', [NotificationController::class, 'index'])->name('notifications.index');
@@ -135,7 +141,23 @@ Route::middleware('auth')->group(function () {
     Route::post('/conferences/{conference}/papers/{paper}/assign-reviewers', [PaperController::class, 'assignReviewers'])
         ->name('papers.assign-reviewers')
         ->middleware('auth');
+
+    // Paper revision submission
+    Route::middleware(['auth'])->group(function () {
+        Route::get('papers/{paper}/revision', [\App\Http\Controllers\PaperController::class, 'showRevisionForm'])->name('papers.revision');
+        Route::put('papers/{paper}/revision', [\App\Http\Controllers\PaperController::class, 'submitRevision'])->name('papers.submit-revision');
+        // Camera ready form (if not present)
+        Route::get('papers/{paper}/camera-ready', [\App\Http\Controllers\PaperController::class, 'showCameraReadyForm'])->name('papers.showCameraReadyForm');
+        // (Optional) Route for batch status update after deadline (for scheduled/console use)
+        // Route::post('papers/update-submitted-to-under-review', [\App\Http\Controllers\PaperController::class, 'updateSubmittedToUnderReview']);
+    });
+
+    // Download paper file
+    Route::get('/papers/{paper}/download', [\App\Http\Controllers\PaperController::class, 'download'])->name('papers.download');
 });
+
+// Publicly accessible conference index and show
+Route::resource('conferences', ConferenceController::class)->only(['index', 'show']);
 
 // Invitation response routes
 Route::get('/pc-invitations/accept/{invitation}', [ProgramCommitteeController::class, 'acceptInvitation'])

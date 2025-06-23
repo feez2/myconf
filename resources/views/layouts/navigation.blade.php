@@ -4,7 +4,7 @@ use App\Models\Conference;
 
 <nav class="navbar navbar-expand-lg navbar-dark">
     <div class="container">
-        <a class="navbar-brand" href="{{ route('home') }}"><img src="{{ asset('/') }}logo/AdroidCMTLogo.png" width="160" height="33"></a>
+        <a class="navbar-brand" href="{{ route('home') }}">MYCONF</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -19,12 +19,14 @@ use App\Models\Conference;
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('dashboard') }}">Dashboard</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('conferences.index') }}">Conferences</a>
-                    </li>
                     @if(auth()->user()->role === 'reviewer' || auth()->user()->programCommittees()->exists())
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('reviews.index') }}">My Reviews</a>
+                        </li>
+                    @endif
+                    @if(auth()->user()->role === 'author')
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('papers.index') }}">My Submissions</a>
                         </li>
                     @endif
                     @if(auth()->user()->role === 'admin')
@@ -62,7 +64,7 @@ use App\Models\Conference;
                     @endif
                 @else
                     <li class="nav-item dropdown">
-                        <a class="nav-link" href="#" id="notificationsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <a class="nav-link" href="{{ route('notifications.index') }}">
                             <i class="bi bi-bell"></i>
                             @if(auth()->user()->unreadNotifications->count() > 0)
                                 <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
@@ -70,9 +72,19 @@ use App\Models\Conference;
                                 </span>
                             @endif
                         </a>
-                        @include('components.notification-dropdown', [
-                            'notifications' => auth()->user()->unreadNotifications()->limit(5)->get()
-                        ])
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationsDropdown" style="min-width: 350px;">
+                            <li>
+                                @include('components.notification-dropdown', [
+                                    'notifications' => auth()->user()->unreadNotifications()->limit(5)->get()
+                                ])
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item text-center" href="{{ route('notifications.index') }}">
+                                    View All Notifications
+                                </a>
+                            </li>
+                        </ul>
                     </li>
                     <li class="nav-item dropdown">
                         <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>

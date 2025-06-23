@@ -40,10 +40,28 @@
 
                         <div class="mb-4">
                             <h5>Paper File</h5>
-                            <a href="{{ Storage::url($paper->file_path) }}" class="btn btn-outline-primary" target="_blank">
+                            <a href="{{ route('papers.download', $paper) }}" class="btn btn-outline-primary" target="_blank">
                                 Download Paper
                             </a>
+                            @if($paper->revision_submitted_at)
+                                <div class="mt-2">
+                                    <small class="text-muted">
+                                        <i class="bi bi-info-circle"></i> This is a revised version submitted on {{ $paper->revision_submitted_at->format('F j, Y') }}
+                                    </small>
+                                </div>
+                            @endif
                         </div>
+
+                        @if($paper->revision_summary)
+                            <div class="mb-4">
+                                <h5>Revision Summary</h5>
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        {!! nl2br(e($paper->revision_summary)) !!}
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
 
                         @if($paper->status === 'accepted' || $paper->status === 'rejected')
                             <div class="mb-4">
@@ -69,7 +87,7 @@
                                             <h6>Comments:</h6>
                                             <p>{{ $review->comments }}</p>
                                             <h6>Recommendation:</h6>
-                                            <p>{{ ucfirst($review->recommendation) }}</p>
+                                            <p>{{ $review->recommendation_name }}</p>
                                         </div>
                                     </div>
                                 @endforeach
@@ -78,9 +96,25 @@
 
                         <div class="d-flex justify-content-end">
                             @can('update', $paper)
-                                <a href="{{ route('papers.edit', $paper) }}" class="btn btn-primary me-2">
-                                    Edit Paper
-                                </a>
+                                @if($paper->status === \App\Models\Paper::STATUS_SUBMITTED && isset($paper->conference->submission_deadline) && now()->lte($paper->conference->submission_deadline))
+                                    <a href="{{ route('papers.edit', $paper) }}" class="btn btn-primary me-2">
+                                        Edit Paper
+                                    </a>
+                                @endif
+                                @if($paper->status === \App\Models\Paper::STATUS_REVISION_REQUIRED)
+                                    <a href="{{ route('papers.revision', $paper) }}" class="btn btn-warning me-2">
+                                        Submit Revision
+                                    </a>
+                                @endif
+                                @if($paper->status === \App\Models\Paper::STATUS_ACCEPTED)
+                                    @if(!$paper->camera_ready_file)
+                                        <a href="{{ route('papers.showCameraReadyForm', $paper) }}" class="btn btn-success me-2">
+                                            Submit Camera Ready
+                                        </a>
+                                    @else
+                                        <span class="badge bg-success me-2">Camera Ready Submitted</span>
+                                    @endif
+                                @endif
                             @endcan
                             @can('delete', $paper)
                                 <form action="{{ route('papers.destroy', $paper) }}" method="POST">

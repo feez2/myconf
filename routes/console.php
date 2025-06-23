@@ -17,3 +17,8 @@ use Illuminate\Support\Facades\Artisan;
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
+
+Artisan::command('papers:update-to-under-review', function () {
+    \App\Models\Paper::updateSubmittedToUnderReview();
+    $this->info('Updated submitted papers to under_review where deadline has passed.');
+})->describe('Update all submitted papers to under_review if their conference submission deadline has passed.');

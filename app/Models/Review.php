@@ -16,7 +16,8 @@ class Review extends Model
         'comments',
         'status',
         'confidential_comments',
-        'completed_at'
+        'completed_at',
+        'recommendation',
     ];
 
     protected $casts = [

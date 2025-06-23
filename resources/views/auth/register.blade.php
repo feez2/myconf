@@ -40,6 +40,12 @@
             @enderror
         </div>
 
+        <!-- Login as Reviewer Checkbox -->
+        <div class="mb-4 form-check">
+            <input id="reviewer" type="checkbox" class="form-check-input" name="reviewer" value="1" {{ old('reviewer') ? 'checked' : '' }}>
+            <label for="reviewer" class="form-check-label">Login as Reviewer</label>
+        </div>
+
         <div class="d-flex justify-content-between align-items-center">
             <a class="auth-link" href="{{ route('login') }}">
                 Already registered?

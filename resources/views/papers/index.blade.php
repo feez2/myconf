@@ -83,11 +83,25 @@
                                             <a href="{{ route('papers.show', $paper) }}" class="btn btn-sm btn-info">
                                                 <i class="bi bi-eye"></i> View
                                             </a>
-                                            @can('update', $paper)
+                                            @if($paper->status === 'submitted' && isset($paper->conference->submission_deadline) && now()->lte($paper->conference->submission_deadline) && auth()->user()->can('update', $paper))
                                                 <a href="{{ route('papers.edit', $paper) }}" class="btn btn-sm btn-primary">
                                                     <i class="bi bi-pencil"></i> Edit
                                                 </a>
-                                            @endcan
+                                            @endif
+                                            @if($paper->status === 'accepted')
+                                                @if(!$paper->camera_ready_file)
+                                                    <a href="{{ route('papers.showCameraReadyForm', $paper) }}" class="btn btn-sm btn-success">
+                                                        <i class="bi bi-upload"></i> Camera Ready
+                                                    </a>
+                                                @else
+                                                    <span class="badge bg-success">Camera Ready Submitted</span>
+                                                @endif
+                                            @endif
+                                            @if($paper->status === 'revision_required')
+                                                <a href="{{ route('papers.revision', $paper) }}" class="btn btn-sm btn-warning">
+                                                    <i class="bi bi-pencil-square"></i> Revision
+                                                </a>
+                                            @endif
                                         </td>
                                     </tr>
                                 @endforeach

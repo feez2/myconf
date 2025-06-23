@@ -31,7 +31,7 @@ use App\Models\Review;
                                 <select class="form-select @error('recommendation') is-invalid @enderror"
                                         id="recommendation" name="recommendation" required>
                                     @foreach(Review::recommendationOptions() as $value => $label)
-                                        <option value="{{ $value }}" {{ old('recommendation') == $value ? 'selected' : '' }}>
+                                        <option value="{{ $value }}" {{ old('recommendation', $review->recommendation) == $value ? 'selected' : '' }}>
                                             {{ $label }}
                                         </option>
                                     @endforeach

@@ -19,6 +19,20 @@ use App\Models\Paper;
                             <p><strong>Title:</strong> {{ $paper->title }}</p>
                             <p><strong>Author:</strong> {{ $paper->author->name }}</p>
                             <p><strong>Status:</strong> {{ $paper->status }}</p>
+                            @if($paper->revision_submitted_at)
+                                <div class="alert alert-info">
+                                    <h6>Revision Information</h6>
+                                    <p><strong>Revision Submitted:</strong> {{ $paper->revision_submitted_at->format('F j, Y \a\t g:i a') }}</p>
+                                    @if($paper->revision_summary)
+                                        <p><strong>Revision Summary:</strong></p>
+                                        <div class="card bg-light">
+                                            <div class="card-body">
+                                                {!! nl2br(e($paper->revision_summary)) !!}
+                                            </div>
+                                        </div>
+                                    @endif
+                                </div>
+                            @endif
                         </div>
 
                         <div class="mb-4">

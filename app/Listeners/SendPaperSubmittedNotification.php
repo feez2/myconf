@@ -10,11 +10,12 @@ class SendPaperSubmittedNotification
 {
     public function handle(PaperSubmittedEvent $event)
     {
-        // Notify conference chairs
-        $chairs = $event->paper->conference->programChairs;
-
-        foreach ($chairs as $chair) {
-            $chair->notify(new PaperSubmitted($event->paper));
+        // Notify conference chairs (program chairs)
+        $programChairs = $event->paper->conference->programChairs;
+        foreach ($programChairs as $committee) {
+            if ($committee->user) {
+                $committee->user->notify(new PaperSubmitted($event->paper));
+            }
         }
 
         // Notify admin
