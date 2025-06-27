@@ -19,6 +19,9 @@ use App\Models\Conference;
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('dashboard') }}">Dashboard</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('conferences.index') }}">Conferences</a>
+                    </li>
                     @if(auth()->user()->role === 'reviewer' || auth()->user()->programCommittees()->exists())
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('reviews.index') }}">My Reviews</a>

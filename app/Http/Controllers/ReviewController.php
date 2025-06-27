@@ -177,10 +177,6 @@ class ReviewController extends Controller
             'status' => Review::STATUS_PENDING
         ]);
 
-        $paper = Paper::update([
-            'status' => Paper::STATUS_UNDER_REVIEW
-        ]);
-
         return redirect()->route('reviews.edit', $review)
             ->with('success', 'Review started successfully. You can now provide your review.');
     }

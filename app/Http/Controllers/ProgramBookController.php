@@ -216,7 +216,8 @@ class ProgramBookController extends Controller
             ->first();
 
         if ($conflictingSession) {
-            return back()->withErrors(['time_conflict' => 'This session time conflicts with an existing session at the same location: ' . $conflictingSession->title])->withInput();
+            return back()->withErrors(['time_conflict' => 'This session time conflicts with an existing session at the same location: ' . $conflictingSession->title])
+            ->withInput();
         }
 
         $session->update($validated);
